@@ -201,6 +201,7 @@ def verification_code_finder():
     if 'user' in session:
         if request.method == 'POST':
             numbers = request.form['numbers'].split()
+            phpsessid = request.form['phpsessid']
             selected_api = request.form.get('api')
 
             total_success = 0
@@ -209,11 +210,11 @@ def verification_code_finder():
 
             for number in numbers:
                 if selected_api == '1':
-                    code = get_panel_code_api1(number)
+                    code = get_panel_code_api1(number,phpsessid)
                 elif selected_api == '2':
-                    code = get_panel_code_api2(number)
+                    code = get_panel_code_api2(number,phpsessid)
                 elif selected_api == '3':
-                    code = get_panel_code_api3(number)
+                    code = get_panel_code_api3(number,phpsessid)
                 else:
                     flash('Please select an API.', 'danger')
                     return render_template('verification.html')
@@ -240,9 +241,10 @@ def verification_code_finder():
         flash('Please log in first', 'danger')
         return redirect(url_for('login'))
 
-def get_panel_code_api1(number):
+def get_panel_code_api1(number, phpsessid):
+    
     cookies = {
-        'PHPSESSID': 'j2amq0mh5848v110nk4imef651',
+        'PHPSESSID': phpsessid,
     }
 
     headers = {
@@ -276,9 +278,10 @@ def get_panel_code_api1(number):
     except:
         return None
 
-def get_panel_code_api2(number):
+def get_panel_code_api2(number, phpsessid):
+    
     cookies = {
-        'PHPSESSID': 'e0al2dv65qkg7vrop7520qme0v',
+        'PHPSESSID': phpsessid,
     }
 
     headers = {
@@ -293,7 +296,6 @@ def get_panel_code_api2(number):
 
     # Get the current date in the required format (YYYY-MM-DD HH:MM:SS)
     current_date = datetime.now().strftime('%Y-%m-%d')
-
     response = requests.get(f'http://109.236.81.102/ints/agent/res/data_smscdr.php?fdate1=2022-05-01%2000:00:00&fdate2={current_date}%2023:59:59&frange=&fclient=&fnum={number}&fcli=&fgdate=&fgmonth=&fgrange=&fgclient=&fgnumber=&fgcli=&fg=0&sEcho=1&iColumns=9&sColumns=%2C%2C%2C%2C%2C%2C%2C%2C&iDisplayStart=0&iDisplayLength=25&mDataProp_0=0&sSearch_0=&bRegex_0=false&bSearchable_0=true&bSortable_0=true&mDataProp_1=1&sSearch_1=&bRegex_1=false&bSearchable_1=true&bSortable_1=true&mDataProp_2=2&sSearch_2=&bRegex_2=false&bSearchable_2=true&bSortable_2=true&mDataProp_3=3&sSearch_3=&bRegex_3=false&bSearchable_3=true&bSortable_3=true&mDataProp_4=4&sSearch_4=&bRegex_4=false&bSearchable_4=true&bSortable_4=true&mDataProp_5=5&sSearch_5=&bRegex_5=false&bSearchable_5=true&bSortable_5=true&mDataProp_6=6&sSearch_6=&bRegex_6=false&bSearchable_6=true&bSortable_6=true&mDataProp_7=7&sSearch_7=&bRegex_7=false&bSearchable_7=true&bSortable_7=true&mDataProp_8=8&sSearch_8=&bRegex_8=false&bSearchable_8=true&bSortable_8=false&sSearch=&bRegex=false&iSortCol_0=0&sSortDir_0=desc&iSortingCols=1&_=1728052116864',
                         cookies=cookies, headers=headers)
 
