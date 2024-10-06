@@ -258,7 +258,9 @@ def get_panel_code_api1(number):
     response1 = requests.get('http://zodiacpanel.com/login', headers=headers)
     num1, num2 = map(int, re.findall(r'\d+', BeautifulSoup(response1.text, 'html.parser').get_text()))
     result = num1 + num2
-
+    cookies = {
+        'PHPSESSID': response1.cookies['PHPSESSID'],
+    }
     headers = {
         'Host': 'zodiacpanel.com',
         'Cache-Control': 'max-age=0',
@@ -271,7 +273,6 @@ def get_panel_code_api1(number):
         'Referer': 'http://zodiacpanel.com/login',
         'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
-        'Cookie': f'PHPSESSID={response1.cookies['PHPSESSID']}',
     }
 
     data = {
@@ -280,7 +281,7 @@ def get_panel_code_api1(number):
         'capt': str(result),
     }
 
-    response = requests.post('http://zodiacpanel.com/signin', headers=headers, data=data)
+    response = requests.post('http://zodiacpanel.com/signin', cookies=cookies,headers=headers, data=data)
     cookies = {
         'PHPSESSID': response1.cookies['PHPSESSID'],
     }
@@ -329,7 +330,9 @@ def get_panel_code_api2(number):
     response1 = requests.get('http://109.236.81.102/ints/login', headers=headers)
     num1, num2 = map(int, re.findall(r'\d+', BeautifulSoup(response1.text, 'html.parser').get_text()))
     result = num1 + num2
-
+    cookies = {
+            'PHPSESSID': response1.cookies['PHPSESSID'],
+        }
     headers = {
         'Host': '109.236.81.102',
         # 'Content-Length': '54',
@@ -343,7 +346,7 @@ def get_panel_code_api2(number):
         'Referer': 'http://109.236.81.102/ints/login',
         # 'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
-        'Cookie': f'PHPSESSID={response1.cookies['PHPSESSID']}',
+
     }
 
     data = {
@@ -352,7 +355,7 @@ def get_panel_code_api2(number):
         'capt': str(result),
     }
 
-    response = requests.post('http://109.236.81.102/ints/signin', headers=headers, data=data, verify=False)
+    response = requests.post('http://109.236.81.102/ints/signin', cookies=cookies, headers=headers, data=data, verify=False)
     cookies = {
         'PHPSESSID': response1.cookies['PHPSESSID'],
     }
