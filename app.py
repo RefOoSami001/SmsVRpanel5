@@ -6,6 +6,7 @@ import base64
 from flask import Flask, request, render_template, redirect, url_for, session, flash
 from datetime import datetime
 import re
+from bs4 import BeautifulSoup
 app = Flask(__name__)
 app.secret_key = 'refooSami'  # Secret key for session management
 
@@ -201,7 +202,7 @@ def verification_code_finder():
     if 'user' in session:
         if request.method == 'POST':
             numbers = request.form['numbers'].split()
-            phpsessid = request.form['phpsessid']
+            # phpsessid = request.form['phpsessid']
             selected_api = request.form.get('api')
 
             total_success = 0
@@ -210,11 +211,11 @@ def verification_code_finder():
 
             for number in numbers:
                 if selected_api == '1':
-                    code = get_panel_code_api1(number,phpsessid)
+                    code = get_panel_code_api1(number)
                 elif selected_api == '2':
-                    code = get_panel_code_api2(number,phpsessid)
+                    code = get_panel_code_api2(number)
                 elif selected_api == '3':
-                    code = get_panel_code_api3(number,phpsessid)
+                    code = get_panel_code_api3(number)
                 else:
                     flash('Please select an API.', 'danger')
                     return render_template('verification.html')
@@ -241,17 +242,53 @@ def verification_code_finder():
         flash('Please log in first', 'danger')
         return redirect(url_for('login'))
 
-def get_panel_code_api1(number, phpsessid):
-    
+def get_panel_code_api1(number):
+    headers = {
+        'Host': 'zodiacpanel.com',
+        'Cache-Control': 'max-age=0',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Referer': 'http://zodiacpanel.com/agent/SMSDashboard',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+    }
+
+    response1 = requests.get('http://zodiacpanel.com/login', headers=headers)
+    num1, num2 = map(int, re.findall(r'\d+', BeautifulSoup(response1.text, 'html.parser').get_text()))
+    result = num1 + num2
+
+    headers = {
+        'Host': 'zodiacpanel.com',
+        'Cache-Control': 'max-age=0',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Upgrade-Insecure-Requests': '1',
+        'Origin': 'http://zodiacpanel.com',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Referer': 'http://zodiacpanel.com/login',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cookie': f'PHPSESSID={response1.cookies['PHPSESSID']}',
+    }
+
+    data = {
+        'username': 'abdo1746',
+        'password': 'abdo1746',
+        'capt': str(result),
+    }
+
+    response = requests.post('http://zodiacpanel.com/signin', headers=headers, data=data)
     cookies = {
-        'PHPSESSID': phpsessid,
+        'PHPSESSID': response1.cookies['PHPSESSID'],
     }
 
     headers = {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Accept-Language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
         'Connection': 'keep-alive',
-        # 'Cookie': 'PHPSESSID=j2amq0mh5848v110nk4imef651',
         'Referer': 'http://zodiacpanel.com/agent/SMSCDRStats',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
         'X-Requested-With': 'XMLHttpRequest',
@@ -278,17 +315,52 @@ def get_panel_code_api1(number, phpsessid):
     except:
         return None
 
-def get_panel_code_api2(number, phpsessid):
-    
+def get_panel_code_api2(number):
+    headers = {
+        'Host': '109.236.81.102',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+    }
+
+    response1 = requests.get('http://109.236.81.102/ints/login', headers=headers)
+    num1, num2 = map(int, re.findall(r'\d+', BeautifulSoup(response1.text, 'html.parser').get_text()))
+    result = num1 + num2
+
+    headers = {
+        'Host': '109.236.81.102',
+        # 'Content-Length': '54',
+        'Cache-Control': 'max-age=0',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Upgrade-Insecure-Requests': '1',
+        'Origin': 'http://109.236.81.102',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Referer': 'http://109.236.81.102/ints/login',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cookie': f'PHPSESSID={response1.cookies['PHPSESSID']}',
+    }
+
+    data = {
+        'username': 'abdo1746',
+        'password': 'mama123123@@ASD',
+        'capt': str(result),
+    }
+
+    response = requests.post('http://109.236.81.102/ints/signin', headers=headers, data=data, verify=False)
     cookies = {
-        'PHPSESSID': phpsessid,
+        'PHPSESSID': response1.cookies['PHPSESSID'],
     }
 
     headers = {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Accept-Language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
         'Connection': 'keep-alive',
-        # 'Cookie': 'PHPSESSID=nvlvbb5ro1u8p6p3rr126sldc5',
         'Referer': 'http://109.236.81.102/ints/agent/SMSCDRStats',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
         'X-Requested-With': 'XMLHttpRequest',
