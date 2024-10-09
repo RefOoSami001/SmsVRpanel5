@@ -390,47 +390,86 @@ def get_panel_code_api2(number):
     except:
         return None
 
-def get_panel_code_api3(number):
-    # Your credentials
-    username = "moh"
-    password = "550"
-
-    # Base64 encode the username and password
-    auth_hash = base64.b64encode(f"{username}:{password}".encode('utf-8')).decode('utf-8')
-
-    # Authorization header
+def get_verification_code(number, user, password):
     headers = {
-        "Authorization": f"Basic {auth_hash}",
-        "x-current-page": "",
-        "x-page-count": "",
-        "x-per-page": "",
-        "x-total-count": ""
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
     }
 
-    try:
-        # Send GET request to the API
-        response = requests.get("http://jorstel.com/rest/sms", headers=headers)
+    response1 = requests.get('http://45.14.135.150/ints/login', headers=headers)
+    crlf = BeautifulSoup(response1.text, 'html.parser').find('input', {'name': 'crlf'})['value']
+    num1, num2 = map(int, re.findall(r'\d+', BeautifulSoup(response1.text, 'html.parser').get_text()))
+    result = num1 + num2
+    cookies = {
+        'PHPSESSID': response1.cookies['PHPSESSID'],
+    }
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        # 'Cookie': 'PHPSESSID=1q322fm42d82d7v176tpdj9cci',
+        'Origin': 'http://45.14.135.150',
+        'Referer': 'http://45.14.135.150/ints/login',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+    }
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            data = response.json()  # Assuming the API returns a JSON response
-            found = False
-            for message in data:
-                if message.get('destination_addr') == str(number):
-                    found = True
-                    short_message = message.get('short_message')
-                    
-                    # Extract only the digits from the message using regex
-                    verification_code = re.findall(r'\d+', short_message)
-                    return verification_code[0]
-                    break
+
+    data = {
+        'crlf': str(crlf),
+        'username': user,
+        'password': password,
+        'capt': str(result),
+    }
+
+    response = requests.post('http://45.14.135.150/ints/signin', cookies=cookies, headers=headers, data=data)
+    cookies = {
+        'PHPSESSID': response1.cookies['PHPSESSID'],
+    }
+
+    headers = {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Connection': 'keep-alive',
+        'Referer': 'http://45.14.135.150/ints/client/SMSCDRStats',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
+    }
+
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    response = requests.get(
+        f'http://45.14.135.150/ints/client/res/data_smscdr.php?fdate1=2024-10-09%2000:00:00&fdate2={current_date}%2023:59:59&frange=&fnum={number}&fcli=&fgdate=&fgmonth=&fgrange=&fgnumber=&fgcli=&fg=0&sEcho=1&iColumns=7&sColumns=%2C%2C%2C%2C%2C%2C&iDisplayStart=0&iDisplayLength=25&mDataProp_0=0&sSearch_0=&bRegex_0=false&bSearchable_0=true&bSortable_0=true&mDataProp_1=1&sSearch_1=&bRegex_1=false&bSearchable_1=true&bSortable_1=true&mDataProp_2=2&sSearch_2=&bRegex_2=false&bSearchable_2=true&bSortable_2=true&mDataProp_3=3&sSearch_3=&bRegex_3=false&bSearchable_3=true&bSortable_3=true&mDataProp_4=4&sSearch_4=&bRegex_4=false&bSearchable_4=true&bSortable_4=true&mDataProp_5=5&sSearch_5=&bRegex_5=false&bSearchable_5=true&bSortable_5=true&mDataProp_6=6&sSearch_6=&bRegex_6=false&bSearchable_6=true&bSortable_6=true&sSearch=&bRegex=false&iSortCol_0=0&sSortDir_0=desc&iSortingCols=1&_=1728490252568',
+        cookies=cookies,
+        headers=headers,
+    )
+    try:
+        data = json.loads(response.text)
+        print(data)
+        # Extract the message
+        message_text = data['aaData'][0][4]
+
+        verification_code = re.search(r'\d+', message_text)
             
-            if not found:
-                return None
+        if verification_code:
+            return verification_code.group()
         else:
             return None
     except:
-        return None  
+        return None
+
+def get_panel_code_api3(number):
+    code = get_verification_code(number, 'Abdo17', 'Abdo17')
+    if code:
+        return code
+
+    code = get_verification_code(number, 'mohamed17450', 'mohamed4755')
+    return code
 
 if __name__ == '__main__':
     init_db()
